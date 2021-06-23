@@ -32,6 +32,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
     @Unique
     private Movement movement = null;
 
+    @Unique
+    private Movement wantedGrappleMovement = null;
+    private int grappleTicksLeft = 0;
+
     @Inject(method = "travel", at = @At("HEAD"), cancellable = true)
     void travel(Vec3d movementInput, CallbackInfo ci) {
         if (this.canMoveVoluntarily() || this.isLogicalSideForUpdatingMovement()) {
@@ -53,5 +57,25 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
     @Override
     public void setMovement(Movement movement) {
         this.movement = movement;
+    }
+
+    @Override
+    public Movement getWantedGrappleMovement() {
+        return wantedGrappleMovement;
+    }
+
+    @Override
+    public void setWantedGrappleMovement(Movement movement) {
+        this.wantedGrappleMovement = movement;
+    }
+
+    @Override
+    public int getGrappleTicks() {
+        return grappleTicksLeft;
+    }
+
+    @Override
+    public void setGrappleTicks(int ticks) {
+        this.grappleTicksLeft = ticks;
     }
 }

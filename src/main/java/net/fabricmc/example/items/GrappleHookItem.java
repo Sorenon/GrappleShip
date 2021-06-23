@@ -32,7 +32,7 @@ public class GrappleHookItem extends Item {
                 user.playSound(SoundEvents.ITEM_SPYGLASS_STOP_USING, 1.0f, 1.0f);
                 return new TypedActionResult<>(ActionResult.SUCCESS, user.getStackInHand(hand));
             } else {
-                double distance = 60;
+                double distance = 10;
                 Vec3d start = user.getCameraPosVec(1.0f);
                 Vec3d look = user.getRotationVec(1.0f);
                 Vec3d end = start.add(look.x * distance, look.y * distance, look.z * distance);

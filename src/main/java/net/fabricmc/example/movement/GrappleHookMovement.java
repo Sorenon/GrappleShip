@@ -26,8 +26,7 @@ public class GrappleHookMovement extends Movement {
             entity.playSound(SoundEvents.BLOCK_CHAIN_BREAK, 1.0f, 1.0f);
 
             var movement = new AirStrafeMovement(0.05);
-            movement.travel(entity, input, true);
-            return movement;
+            return movement.travel(entity, input, true);
         }
         if (!jumping) {
             hasNotJumped = true;
@@ -73,14 +72,15 @@ public class GrappleHookMovement extends Movement {
 
             Vec3d dir = delta.normalize();
             Vec3d addVel;
-//            double damping = 0.8;
             double damping = 0.8;
+//            double damping = 0.85;
             if (delta.length() > 1) {
                 Vec3d wishDir = inputToWishDir(input, entity.getYaw()); //TODO tilt wish dir
+//                dir = wishDir.add(dir.multiply(1.6)).normalize();
                 dir = wishDir.add(dir.multiply(1.5)).normalize();
 
-                addVel = dir.multiply(0.05f * 3);
-//                addVel = dir.multiply(0.05f * 3); <-fun :)
+//                addVel = dir.multiply(0.05f * 2.5);
+                addVel = dir.multiply(0.05f * 3); //<-fun :)
 //                addVel = dir.multiply(0.05f * 2);
             } else {
                 addVel = delta;

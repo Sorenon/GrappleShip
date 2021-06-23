@@ -3,17 +3,19 @@ package net.fabricmc.example;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.example.accessors.LivingEntityExt;
 import net.fabricmc.example.movement.GrappleHookMovement;
+import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.texture.MissingSprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
-import net.minecraft.world.World;
 
 public class ExampleModClient implements ClientModInitializer {
     @Override
