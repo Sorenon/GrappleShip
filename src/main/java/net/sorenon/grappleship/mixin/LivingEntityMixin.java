@@ -1,15 +1,14 @@
-package net.fabricmc.example.mixin;
+package net.sorenon.grappleship.mixin;
 
-import net.fabricmc.example.accessors.LivingEntityExt;
-import net.fabricmc.example.movement.AirStrafeMovement;
-import net.fabricmc.example.movement.Movement;
+import net.sorenon.grappleship.accessors.LivingEntityExt;
+import net.sorenon.grappleship.movement.AirStrafeMovement;
+import net.sorenon.grappleship.movement.Movement;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.Flutterer;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.EntityDamageSource;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShovelItem;
 import net.minecraft.util.math.Vec3d;
@@ -72,7 +71,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
     DamageSource modDamageB(DamageSource damageSource) {
         if (damageSource.getAttacker() instanceof LivingEntityMixin attacker) {
             if (attacker.movement instanceof AirStrafeMovement && attacker.getMainHandStack().getItem() instanceof ShovelItem) {
-                return new EntityDamageSource("modid.market_garden", attacker);
+                return new EntityDamageSource("grappleship.market_garden", attacker);
             }
         }
         return damageSource;

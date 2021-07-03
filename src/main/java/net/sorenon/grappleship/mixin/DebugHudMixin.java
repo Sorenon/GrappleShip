@@ -1,4 +1,4 @@
-package net.fabricmc.example.mixin;
+package net.sorenon.grappleship.mixin;
 
 import net.minecraft.client.gui.hud.DebugHud;
 import org.spongepowered.asm.mixin.Mixin;

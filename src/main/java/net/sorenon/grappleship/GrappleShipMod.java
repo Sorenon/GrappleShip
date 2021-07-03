@@ -1,9 +1,10 @@
-package net.fabricmc.example;
+package net.sorenon.grappleship;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.example.accessors.LivingEntityExt;
-import net.fabricmc.example.items.GrappleHookItem;
-import net.fabricmc.example.movement.GrappleHookMovement;
+import net.sorenon.grappleship.accessors.LivingEntityExt;
+import net.sorenon.grappleship.items.GrappleHookItem;
+import net.sorenon.grappleship.items.WristGrappleItem;
+import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -13,17 +14,18 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 
-public class ExampleMod implements ModInitializer {
+public class GrappleShipMod implements ModInitializer {
 
-	public static final Identifier C2S_START_GRAPPLE = new Identifier("modid", "c_grapple_start");
-	public static final Identifier C2S_END_GRAPPLE = new Identifier("modid", "c_grapple_end");
+	public static final Identifier C2S_START_GRAPPLE = new Identifier("grappleship", "c_grapple_start");
+	public static final Identifier C2S_END_GRAPPLE = new Identifier("grappleship", "c_grapple_end");
 
-	public static final Identifier S2C_START_GRAPPLE = new Identifier("modid", "s_grapple_start");
-	public static final Identifier S2C_END_GRAPPLE = new Identifier("modid", "s_grapple_end");
+	public static final Identifier S2C_START_GRAPPLE = new Identifier("grappleship", "s_grapple_start");
+	public static final Identifier S2C_END_GRAPPLE = new Identifier("grappleship", "s_grapple_end");
 
 	@Override
 	public void onInitialize() {
-		Registry.register(Registry.ITEM, new Identifier("modid", "grapple"), new GrappleHookItem(new FabricItemSettings().maxCount(1)));
+		Registry.register(Registry.ITEM, new Identifier("grappleship", "grapple"), new GrappleHookItem(new FabricItemSettings().maxCount(1)));
+		Registry.register(Registry.ITEM, new Identifier("grappleship", "grapple2"), new WristGrappleItem(new FabricItemSettings().maxCount(1)));
 
 		ServerPlayNetworking.registerGlobalReceiver(C2S_START_GRAPPLE, (server, player, handler, buf, responseSender) -> {
 			Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());

@@ -1,21 +1,20 @@
-package net.fabricmc.example;
+package net.sorenon.grappleship;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.example.accessors.LivingEntityExt;
-import net.fabricmc.example.movement.GrappleHookMovement;
+import net.sorenon.grappleship.accessors.LivingEntityExt;
+import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Vec3d;
 
-public class ExampleModClient implements ClientModInitializer {
+public class GrappleShipClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        ClientPlayNetworking.registerGlobalReceiver(ExampleMod.S2C_START_GRAPPLE, (client, handler, buf, responseSender) -> {
+        ClientPlayNetworking.registerGlobalReceiver(GrappleShipMod.S2C_START_GRAPPLE, (client, handler, buf, responseSender) -> {
             Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
             int id = buf.readInt();
 
@@ -26,7 +25,7 @@ public class ExampleModClient implements ClientModInitializer {
             });
         });
 
-        ClientPlayNetworking.registerGlobalReceiver(ExampleMod.S2C_END_GRAPPLE, (client, handler, buf, responseSender) -> {
+        ClientPlayNetworking.registerGlobalReceiver(GrappleShipMod.S2C_END_GRAPPLE, (client, handler, buf, responseSender) -> {
             boolean jump = buf.readBoolean();
             int id = buf.readInt();
 

@@ -1,6 +1,6 @@
-package net.fabricmc.example.movement;
+package net.sorenon.grappleship.movement;
 
-import net.fabricmc.example.mixin.LivingEntityAcc;
+import net.sorenon.grappleship.mixin.LivingEntityAcc;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.MathHelper;

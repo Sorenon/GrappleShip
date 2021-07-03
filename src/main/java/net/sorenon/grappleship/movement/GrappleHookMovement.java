@@ -1,16 +1,15 @@
-package net.fabricmc.example.movement;
+package net.sorenon.grappleship.movement;
 
-import net.fabricmc.example.ExampleMod;
-import net.fabricmc.example.accessors.LivingEntityExt;
-import net.fabricmc.example.items.GrappleHookItem;
-import net.fabricmc.example.mixin.LivingEntityAcc;
+import net.sorenon.grappleship.GrappleShipMod;
+import net.sorenon.grappleship.accessors.LivingEntityExt;
+import net.sorenon.grappleship.items.GrappleHookItem;
+import net.sorenon.grappleship.mixin.LivingEntityAcc;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -30,7 +29,7 @@ public class GrappleHookMovement extends Movement {
         if (jumping && hasNotJumped) {
             var buf = PacketByteBufs.create();
             buf.writeBoolean(true);
-            ClientPlayNetworking.send(ExampleMod.C2S_END_GRAPPLE, buf);
+            ClientPlayNetworking.send(GrappleShipMod.C2S_END_GRAPPLE, buf);
 
             return end(entity, true).travel(entity, input, jumping);
         }

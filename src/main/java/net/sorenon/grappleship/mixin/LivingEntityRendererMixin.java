@@ -1,8 +1,8 @@
-package net.fabricmc.example.mixin;
+package net.sorenon.grappleship.mixin;
 
-import net.fabricmc.example.GrappleFeatureRenderer;
-import net.fabricmc.example.accessors.LivingEntityExt;
-import net.fabricmc.example.movement.GrappleHookMovement;
+import net.sorenon.grappleship.GrappleFeatureRenderer;
+import net.sorenon.grappleship.accessors.LivingEntityExt;
+import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;

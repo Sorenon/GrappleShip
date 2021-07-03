@@ -1,6 +1,6 @@
-package net.fabricmc.example.accessors;
+package net.sorenon.grappleship.accessors;
 
-import net.fabricmc.example.movement.Movement;
+import net.sorenon.grappleship.movement.Movement;
 
 public interface LivingEntityExt {
     Movement getMovement();

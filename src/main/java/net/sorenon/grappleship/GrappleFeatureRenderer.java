@@ -1,8 +1,5 @@
-package net.fabricmc.example;
+package net.sorenon.grappleship;
 
-import net.fabricmc.example.accessors.LivingEntityExt;
-import net.fabricmc.example.movement.GrappleHookMovement;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;

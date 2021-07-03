@@ -1,4 +1,4 @@
-package net.fabricmc.example.mixin;
+package net.sorenon.grappleship.mixin;
 
 import net.minecraft.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;

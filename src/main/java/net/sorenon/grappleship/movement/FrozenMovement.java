@@ -1,4 +1,4 @@
-package net.fabricmc.example.movement;
+package net.sorenon.grappleship.movement;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Vec3d;

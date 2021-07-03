@@ -1,14 +1,13 @@
-package net.fabricmc.example.items;
+package net.sorenon.grappleship.items;
 
-import net.fabricmc.example.ExampleMod;
-import net.fabricmc.example.accessors.LivingEntityExt;
-import net.fabricmc.example.movement.GrappleHookMovement;
+import net.sorenon.grappleship.GrappleShipMod;
+import net.sorenon.grappleship.accessors.LivingEntityExt;
+import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -32,7 +31,7 @@ public class GrappleHookItem extends Item {
             if (ext.getMovement() instanceof GrappleHookMovement movement) {
                 var buf = PacketByteBufs.create();
                 buf.writeBoolean(false);
-                ClientPlayNetworking.send(ExampleMod.C2S_END_GRAPPLE, buf);
+                ClientPlayNetworking.send(GrappleShipMod.C2S_END_GRAPPLE, buf);
 
                 movement.end(user, false);
 
@@ -49,7 +48,7 @@ public class GrappleHookItem extends Item {
                     buf.writeDouble(res.getPos().x);
                     buf.writeDouble(res.getPos().y);
                     buf.writeDouble(res.getPos().z);
-                    ClientPlayNetworking.send(ExampleMod.C2S_START_GRAPPLE, buf);
+                    ClientPlayNetworking.send(GrappleShipMod.C2S_START_GRAPPLE, buf);
 
                     user.getAbilities().flying = false;
 
