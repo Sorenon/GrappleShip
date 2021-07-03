@@ -1,18 +1,23 @@
 package net.fabricmc.example.mixin;
 
 import net.fabricmc.example.accessors.LivingEntityExt;
+import net.fabricmc.example.movement.AirStrafeMovement;
 import net.fabricmc.example.movement.Movement;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.Flutterer;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.EntityDamageSource;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ShovelItem;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
@@ -24,6 +29,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
     @Shadow protected boolean jumping;
 
     @Shadow public abstract void updateLimbs(LivingEntity entity, boolean flutter);
+
+    @Shadow public abstract ItemStack getMainHandStack();
+
+    @Shadow private float absorptionAmount;
 
     public LivingEntityMixin(EntityType<?> type, World world) {
         super(type, world);
@@ -47,6 +56,26 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
                 }
             }
         }
+    }
+
+    @ModifyVariable(method = "damage", ordinal = 0, at = @At("HEAD"))
+    float modDamageA(float amount, DamageSource damageSource) {
+        if (damageSource.getAttacker() instanceof LivingEntityMixin attacker) {
+            if (attacker.movement instanceof AirStrafeMovement && attacker.getMainHandStack().getItem() instanceof ShovelItem) {
+                return amount * 4;
+            }
+        }
+        return amount;
+    }
+
+    @ModifyVariable(method = "damage", ordinal = 0, at = @At("HEAD"))
+    DamageSource modDamageB(DamageSource damageSource) {
+        if (damageSource.getAttacker() instanceof LivingEntityMixin attacker) {
+            if (attacker.movement instanceof AirStrafeMovement && attacker.getMainHandStack().getItem() instanceof ShovelItem) {
+                return new EntityDamageSource("modid.market_garden", attacker);
+            }
+        }
+        return damageSource;
     }
 
     @Override

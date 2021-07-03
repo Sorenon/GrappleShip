@@ -1,0 +1,4 @@
+{
+  "death.attack.modid.market_garden": "%1$s was market gardened by %2$s",
+  "death.attack.modid.market_garden.item": "%1$s was market gardened by %2$s using %3$s"
+}

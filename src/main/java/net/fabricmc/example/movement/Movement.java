@@ -21,6 +21,8 @@ public abstract class Movement {
         }
     }
 
+    public abstract String name();
+
     public static boolean water(LivingEntity entity){
         FluidState fluidState = entity.world.getFluidState(entity.getBlockPos());
 

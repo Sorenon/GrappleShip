@@ -1,8 +1,10 @@
 package net.fabricmc.example.items;
 
+import net.fabricmc.example.ExampleMod;
 import net.fabricmc.example.accessors.LivingEntityExt;
-import net.fabricmc.example.movement.AirStrafeMovement;
 import net.fabricmc.example.movement.GrappleHookMovement;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -27,9 +29,13 @@ public class GrappleHookItem extends Item {
         if (world.isClient) {
             var ext = ((LivingEntityExt)user);
 
-            if (ext.getMovement() instanceof GrappleHookMovement) {
-                ext.setMovement(new AirStrafeMovement(0.05));
-                user.playSound(SoundEvents.ITEM_SPYGLASS_STOP_USING, 1.0f, 1.0f);
+            if (ext.getMovement() instanceof GrappleHookMovement movement) {
+                var buf = PacketByteBufs.create();
+                buf.writeBoolean(false);
+                ClientPlayNetworking.send(ExampleMod.C2S_END_GRAPPLE, buf);
+
+                movement.end(user, false);
+
                 return new TypedActionResult<>(ActionResult.SUCCESS, user.getStackInHand(hand));
             } else {
                 double distance = 10;
@@ -39,11 +45,16 @@ public class GrappleHookItem extends Item {
                 HitResult res = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, user));
 
                 if (res.getType() != HitResult.Type.MISS) {
-                    user.playSound(SoundEvents.ITEM_SPYGLASS_USE, 1.0f, 1.0f);
-                    ((LivingEntityExt)user).setMovement(new GrappleHookMovement(res.getPos()));
+                    var buf = PacketByteBufs.create();
+                    buf.writeDouble(res.getPos().x);
+                    buf.writeDouble(res.getPos().y);
+                    buf.writeDouble(res.getPos().z);
+                    ClientPlayNetworking.send(ExampleMod.C2S_START_GRAPPLE, buf);
 
-//                    user.setVelocity(user.getVelocity().multiply(1,0.6,1));
                     user.getAbilities().flying = false;
+
+                    GrappleHookMovement.start(user, res.getPos());
+
                     return new TypedActionResult<>(ActionResult.SUCCESS, user.getStackInHand(hand));
                 }
             }

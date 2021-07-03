@@ -21,6 +21,11 @@ public class FrozenMovement extends Movement {
         }
     }
 
+    @Override
+    public String name() {
+        return "Frozen";
+    }
+
     @FunctionalInterface
     public interface UnfreezePredicate {
         boolean shouldUnfreeze(FrozenMovement movement, LivingEntity entity, Vec3d input, boolean jumping);

@@ -50,6 +50,11 @@ public class AirStrafeMovement extends Movement {
         return this;
     }
 
+    @Override
+    public String name() {
+        return "Air Strafe";
+    }
+
     private Vec3d Accelerate(Vec3d velocity, Vec3d wish_dir, double wish_speed, double accel) {
         double current_speed = velocity.dotProduct(wish_dir);
         double add_speed = wish_speed - current_speed;

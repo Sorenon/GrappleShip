@@ -1,10 +1,16 @@
 package net.fabricmc.example.movement;
 
+import net.fabricmc.example.ExampleMod;
+import net.fabricmc.example.accessors.LivingEntityExt;
 import net.fabricmc.example.items.GrappleHookItem;
 import net.fabricmc.example.mixin.LivingEntityAcc;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -22,11 +28,11 @@ public class GrappleHookMovement extends Movement {
     @Override
     public Movement travel(LivingEntity entity, Vec3d input, boolean jumping) {
         if (jumping && hasNotJumped) {
-            grappleJump(entity);
-            entity.playSound(SoundEvents.BLOCK_CHAIN_BREAK, 1.0f, 1.0f);
+            var buf = PacketByteBufs.create();
+            buf.writeBoolean(true);
+            ClientPlayNetworking.send(ExampleMod.C2S_END_GRAPPLE, buf);
 
-            var movement = new AirStrafeMovement(0.05);
-            return movement.travel(entity, input, true);
+            return end(entity, true).travel(entity, input, jumping);
         }
         if (!jumping) {
             hasNotJumped = true;
@@ -74,7 +80,6 @@ public class GrappleHookMovement extends Movement {
             Vec3d addVel;
             double damping = 0.8;
 //            double damping = 0.85;
-            if (delta.length() > 1) {
                 Vec3d wishDir = inputToWishDir(input, entity.getYaw()); //TODO tilt wish dir
 //                dir = wishDir.add(dir.multiply(1.6)).normalize();
                 dir = wishDir.add(dir.multiply(1.5)).normalize();
@@ -82,8 +87,7 @@ public class GrappleHookMovement extends Movement {
 //                addVel = dir.multiply(0.05f * 2.5);
                 addVel = dir.multiply(0.05f * 3); //<-fun :)
 //                addVel = dir.multiply(0.05f * 2);
-            } else {
-                addVel = delta;
+            if (delta.length() < 1) {
                 damping = 0.25;
             }
 
@@ -105,7 +109,12 @@ public class GrappleHookMovement extends Movement {
         return this;
     }
 
-    void grappleJump(LivingEntity entity) {
+    @Override
+    public String name() {
+        return "Grappling";
+    }
+
+    public void grappleJump(LivingEntity entity) {
         float f = ((LivingEntityAcc) entity).callGetJumpVelocity() * 1.25f;
         if (entity.hasStatusEffect(StatusEffects.JUMP_BOOST)) {
             f += 0.1F * (float) (entity.getStatusEffect(StatusEffects.JUMP_BOOST).getAmplifier() + 1);
@@ -148,5 +157,32 @@ public class GrappleHookMovement extends Movement {
                 add_speed);
 
         return velocity.add(wish_dir.multiply(accel_speed, 0, accel_speed));
+    }
+
+    public static void start(LivingEntity entity, Vec3d pos) {
+        if (entity.world instanceof ClientWorld world) {
+            world.playSound(entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.ITEM_SPYGLASS_USE, entity.getSoundCategory(), 1.0f, 1.0f, true);
+        }
+        if (entity instanceof PlayerEntity player) {
+            player.getAbilities().flying = false;
+        }
+        ((LivingEntityExt)entity).setMovement(new GrappleHookMovement(pos));
+    }
+
+    public AirStrafeMovement end(LivingEntity entity, boolean jump) {
+        LivingEntityExt ext = (LivingEntityExt) entity;
+        if (jump) {
+            grappleJump(entity);
+        }
+        if (entity.world instanceof ClientWorld world) {
+            if (jump) {
+                world.playSound(entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.BLOCK_CHAIN_BREAK, entity.getSoundCategory(), 1.0f, 1.0f, true);
+            } else {
+                world.playSound(entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.BLOCK_CHAIN_PLACE, entity.getSoundCategory(), 1.0f, 1.0f, true);
+            }
+        }
+        var next = new AirStrafeMovement(0.05);
+        ext.setMovement(next);
+        return next;
     }
 }
