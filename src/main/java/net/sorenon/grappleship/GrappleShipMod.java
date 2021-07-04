@@ -29,12 +29,14 @@ public class GrappleShipMod implements ModInitializer {
 
 		ServerPlayNetworking.registerGlobalReceiver(C2S_START_GRAPPLE, (server, player, handler, buf, responseSender) -> {
 			Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+			int entityId = buf.readInt();
 
 			server.execute(() -> {
 				PacketByteBuf buf2 = PacketByteBufs.create();
 				buf2.writeDouble(pos.x);
 				buf2.writeDouble(pos.y);
 				buf2.writeDouble(pos.z);
+				buf2.writeInt(entityId);
 				buf2.writeInt(player.getId());
 
 				for (var p : PlayerLookup.tracking(player)) {
@@ -43,7 +45,7 @@ public class GrappleShipMod implements ModInitializer {
 					}
 				}
 
-				GrappleHookMovement.start(player, pos);
+				GrappleHookMovement.start(player, pos, player.world.getEntityById(entityId));
 			});
 		});
 

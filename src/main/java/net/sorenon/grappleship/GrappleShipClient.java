@@ -16,11 +16,12 @@ public class GrappleShipClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientPlayNetworking.registerGlobalReceiver(GrappleShipMod.S2C_START_GRAPPLE, (client, handler, buf, responseSender) -> {
             Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+            int entityTargetId = buf.readInt();
             int id = buf.readInt();
 
             client.execute(() -> {
                 if (handler.getWorld().getEntityById(id) instanceof LivingEntity entity) {
-                    GrappleHookMovement.start(entity, pos);
+                    GrappleHookMovement.start(entity, pos, handler.getWorld().getEntityById(entityTargetId));
                 }
             });
         });
@@ -55,7 +56,7 @@ public class GrappleShipClient implements ClientModInitializer {
 
                 GrappleFeatureRenderer.renderChain(
                         matrices,
-                        movement.target,
+                        movement.getTarget(),
                         entity.getLerpedPos(context.tickDelta()).add(0, entity.getHeight() / 2, 0),
                         context.consumers(),
                         endLight,

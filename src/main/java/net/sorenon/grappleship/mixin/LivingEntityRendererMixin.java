@@ -27,7 +27,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
 
             GrappleFeatureRenderer.renderChain(
                     matrices,
-                    movement.target.subtract(entity.getLerpedPos(tickDelta)),
+                    movement.getTarget().subtract(entity.getLerpedPos(tickDelta)),
                     new Vec3d(0,entity.getHeight() / 2,0),
                     vertexConsumers,
                     light,

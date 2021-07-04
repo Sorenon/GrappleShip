@@ -17,6 +17,7 @@ public class FrozenMovement extends Movement {
             return null;
         }
         else {
+            entity.setVelocity(Vec3d.ZERO);
             return this;
         }
     }

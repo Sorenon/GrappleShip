@@ -52,7 +52,7 @@ public class GrappleHookItem extends Item {
 
                     user.getAbilities().flying = false;
 
-                    GrappleHookMovement.start(user, res.getPos());
+                    GrappleHookMovement.start(user, res.getPos(), null);
 
                     return new TypedActionResult<>(ActionResult.SUCCESS, user.getStackInHand(hand));
                 }
