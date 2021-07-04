@@ -1,6 +1,7 @@
 package net.sorenon.grappleship;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 import net.sorenon.grappleship.accessors.LivingEntityExt;
 import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -10,10 +11,13 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Vec3d;
+import net.sorenon.grappleship.worldshell.client.GhastShipRenderer;
 
 public class GrappleShipClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        EntityRendererRegistry.INSTANCE.register(GrappleShipMod.AIRSHIP_TYPE, GhastShipRenderer::new);
+
         ClientPlayNetworking.registerGlobalReceiver(GrappleShipMod.S2C_START_GRAPPLE, (client, handler, buf, responseSender) -> {
             Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
             int entityTargetId = buf.readInt();

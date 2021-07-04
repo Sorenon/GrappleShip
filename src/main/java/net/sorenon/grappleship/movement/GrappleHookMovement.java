@@ -182,8 +182,8 @@ public class GrappleHookMovement extends Movement {
     }
 
     public static void start(LivingEntity entity, Vec3d pos, @Nullable Entity entityTarget) {
-        if (entity.world instanceof ClientWorld world) {
-            world.playSound(entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.ITEM_SPYGLASS_USE, entity.getSoundCategory(), 1.0f, 1.0f, true);
+        if (entity.world.isClient) {
+            entity.world.playSound(entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.ITEM_SPYGLASS_USE, entity.getSoundCategory(), 1.0f, 1.0f, true);
         }
         if (entity instanceof PlayerEntity player) {
             player.getAbilities().flying = false;
@@ -204,11 +204,11 @@ public class GrappleHookMovement extends Movement {
         if (jump) {
             grappleJump(entity);
         }
-        if (entity.world instanceof ClientWorld world) {
+        if (entity.world.isClient) {
             if (jump) {
-                world.playSound(entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.BLOCK_CHAIN_BREAK, entity.getSoundCategory(), 1.0f, 1.0f, true);
+                entity.world.playSound(entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.BLOCK_CHAIN_BREAK, entity.getSoundCategory(), 1.0f, 1.0f, true);
             } else {
-                world.playSound(entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.BLOCK_CHAIN_PLACE, entity.getSoundCategory(), 1.0f, 1.0f, true);
+                entity.world.playSound(entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.BLOCK_CHAIN_PLACE, entity.getSoundCategory(), 1.0f, 1.0f, true);
             }
         }
         var next = new AirStrafeMovement(0.05);

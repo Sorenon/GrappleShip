@@ -12,6 +12,9 @@ group = project.maven_group
 
 repositories {
 	maven { url 'https://jitpack.io' }
+	flatDir {
+		dirs 'libs'
+	}
 }
 
 dependencies {
@@ -22,6 +25,8 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	include(modImplementation(name: "worldshell-fork-0.1.0"))
 }
 
 processResources {
