@@ -2,8 +2,11 @@ package net.sorenon.grappleship.items;
 
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.sorenon.grappleship.GrappleShipMod;
 import net.sorenon.grappleship.accessors.LivingEntityExt;
 import net.sorenon.grappleship.movement.GrappleHookMovement;
@@ -87,34 +90,54 @@ public class WristGrappleItem extends Item {
 
     public double getLength(ItemStack stack) {
         var tag = stack.getOrCreateTag();
-        if (tag.contains("length", NbtType.DOUBLE)) {
-            return tag.getDouble("length");
-        } else {
-            tag.putDouble("length", 10);
-            return tag.getDouble("length");
+        if (!tag.contains("Length", NbtType.DOUBLE)) {
+            tag.putDouble("Length", 10);
         }
+        return tag.getDouble("Length");
+    }
+
+    public boolean likesBlocks(ItemStack stack) {
+        var tag = stack.getOrCreateTag();
+        if (!tag.contains("LikesBlocks", NbtType.BYTE)) {
+            tag.putBoolean("LikesBlocks", true);
+        }
+        return tag.getBoolean("LikesBlocks");
+    }
+
+    public boolean likesEntities(ItemStack stack) {
+        var tag = stack.getOrCreateTag();
+        if (!tag.contains("LikesEntities", NbtType.BYTE)) {
+            tag.putBoolean("LikesEntities", false);
+        }
+        return tag.getBoolean("LikesEntities");
     }
 
     public HitResult raycast(LivingEntity entity, ItemStack stack) {
-        return raycast(entity, getLength(stack));
+        return raycast(entity, getLength(stack), likesBlocks(stack), likesEntities(stack));
     }
 
-    public HitResult raycast(LivingEntity user, double distance) {
+    public HitResult raycast(LivingEntity user, double distance, boolean likesBlocks, boolean likesEntities) {
         Vec3d start = user.getCameraPosVec(1.0f);
         Vec3d look = user.getRotationVec(1.0f);
         Vec3d end = start.add(look.x * distance, look.y * distance, look.z * distance);
         HitResult res = user.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, user));
 
-        double distanceSqr = distance * distance;
-        if (res != null) {
-            distanceSqr = res.getPos().squaredDistanceTo(start);
+        if (likesEntities) {
+            double distanceSqr = distance * distance;
+            if (res != null) {
+                distanceSqr = res.getPos().squaredDistanceTo(start);
+            }
+
+            Box box = user.getBoundingBox().stretch(look.multiply(distance)).expand(1.0D, 1.0D, 1.0D);
+            EntityHitResult entityHitResult = ProjectileUtil.raycast(user, start, end, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), distanceSqr);
+
+            if (entityHitResult != null && entityHitResult.getPos().squaredDistanceTo(start) < distanceSqr) {
+                res = entityHitResult;
+            }
         }
 
-        Box box = user.getBoundingBox().stretch(look.multiply(distance)).expand(1.0D, 1.0D, 1.0D);
-        EntityHitResult entityHitResult = ProjectileUtil.raycast(user, start, end, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), distanceSqr);
-
-        if (entityHitResult != null && entityHitResult.getPos().squaredDistanceTo(start) < distanceSqr) {
-            res = entityHitResult;
+        if (!likesBlocks && res instanceof BlockHitResult) {
+            return BlockHitResult.createMissed(Vec3d.ZERO, Direction.DOWN, BlockPos.ORIGIN);
         }
         return res;
     }

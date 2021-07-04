@@ -4,14 +4,15 @@
   "package": "net.sorenon.grappleship.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "DebugHudMixin",
-    "InGameHudMixin",
     "LivingEntityAcc",
-    "LivingEntityRendererMixin",
-    "ServerPlayNetworkHandlerAcc"
+    "ServerPlayNetworkHandlerAcc",
+    "LivingEntityMixin"
   ],
   "client": [
-    "LivingEntityMixin"
+    "LivingEntityRendererMixin",
+    "InGameHudMixin",
+    "DebugHudMixin",
+    "ClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
