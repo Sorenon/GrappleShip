@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
@@ -161,9 +162,17 @@ public class GhastAirShip extends WorldShellEntity {
             this.setYaw(getYaw() + yawVelocity);
 
             if (getPrimaryPassenger() instanceof PlayerEntity player) {
-                Vec3d look = player.getRotationVec(1.0f);
+//                Vec3d look = player.getRotationVec(1.0f);
+                Vec3d look = this.getRotationVec(1.0f);
                 look = look.multiply(player.forwardSpeed * 0.04);
                 velocity = velocity.add(look);
+
+                if (player.isSneaking()) {
+                    velocity = velocity.add(0, -0.04, 0);
+                }
+                if (MinecraftClient.getInstance().options.keyJump.isPressed()) {
+                    velocity = velocity.add(0, 0.04, 0);
+                }
 
                 yawVelocity -= player.sidewaysSpeed * 0.2;
             }
@@ -190,7 +199,9 @@ public class GhastAirShip extends WorldShellEntity {
         } else {
             passenger.setPosition(toGlobal(new Vec3d(pos.getX() + 0.5f, pos.getY(), pos.getZ() + 0.5f)));
         }
+
         passenger.setYaw(passenger.getYaw() + this.yawVelocity);
+        passenger.prevYaw += this.yawVelocity;
         passenger.setHeadYaw(passenger.getHeadYaw() + this.yawVelocity);
     }
 

@@ -5,14 +5,16 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "LivingEntityAcc",
-    "ServerPlayNetworkHandlerAcc",
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "PlayerEntityMixin",
+    "ServerPlayNetworkHandlerAcc"
   ],
   "client": [
-    "LivingEntityRendererMixin",
-    "InGameHudMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "ClientPlayerEntityMixin",
     "DebugHudMixin",
-    "ClientPlayerEntityMixin"
+    "InGameHudMixin",
+    "LivingEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

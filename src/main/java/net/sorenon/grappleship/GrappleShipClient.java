@@ -1,21 +1,43 @@
 package net.sorenon.grappleship;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
-import net.sorenon.grappleship.accessors.LivingEntityExt;
-import net.sorenon.grappleship.movement.GrappleHookMovement;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Vec3d;
+import net.sorenon.grappleship.accessors.LivingEntityExt;
+import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.sorenon.grappleship.worldshell.client.GhastShipRenderer;
+import org.lwjgl.glfw.GLFW;
 
 public class GrappleShipClient implements ClientModInitializer {
+
+    public static KeyBinding keyBinding;
+
     @Override
     public void onInitializeClient() {
+        keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.grapplingship.force_dismount", // The translation key of the keybinding's name
+                InputUtil.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
+                GLFW.GLFW_KEY_ENTER, // The keycode of the key
+                "category.grapplingship" // The translation key of the keybinding's category.
+        ));
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (keyBinding.wasPressed()) {
+                ClientPlayNetworking.send(GrappleShipMod.C2S_FORCE_DISMOUNT, PacketByteBufs.create());
+            }
+        });
+
         EntityRendererRegistry.INSTANCE.register(GrappleShipMod.AIRSHIP_TYPE, GhastShipRenderer::new);
 
         ClientPlayNetworking.registerGlobalReceiver(GrappleShipMod.S2C_START_GRAPPLE, (client, handler, buf, responseSender) -> {

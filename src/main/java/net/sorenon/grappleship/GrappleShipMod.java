@@ -32,6 +32,8 @@ public class GrappleShipMod implements ModInitializer {
 	public static final Identifier S2C_START_GRAPPLE = new Identifier(MODID, "s_grapple_start");
 	public static final Identifier S2C_END_GRAPPLE = new Identifier(MODID, "s_grapple_end");
 
+	public static final Identifier C2S_FORCE_DISMOUNT = new Identifier(MODID, "force_dismount");
+
 	public static final WristGrappleItem WRIST_GRAPPLE_ITEM = new WristGrappleItem(new FabricItemSettings().maxCount(1));
 
 	public static final ShipsHelm SHIPS_HELM = new ShipsHelm();
@@ -93,6 +95,10 @@ public class GrappleShipMod implements ModInitializer {
 					movement.end(player, jump);
 				}
 			});
+		});
+
+		ServerPlayNetworking.registerGlobalReceiver(C2S_FORCE_DISMOUNT, (server, player, handler, buf, responseSender) -> {
+			server.execute(player::stopRiding);
 		});
 	}
 }
