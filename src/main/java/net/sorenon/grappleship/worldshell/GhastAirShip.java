@@ -2,16 +2,19 @@ package net.sorenon.grappleship.worldshell;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -21,12 +24,54 @@ import net.snakefangox.worldshell.math.Quaternion;
 import net.sorenon.grappleship.GrappleShipMod;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class GhastAirShip extends WorldShellEntity {
-    private static final TrackedData<Boolean> SHOOTING = DataTracker.registerData(GhastEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
+    private static final TrackedDataHandler<BiMap<Integer, BlockPos>> TDHTYPE = new TrackedDataHandler<>() {
+        @Override
+        public void write(PacketByteBuf buf, BiMap<Integer, BlockPos> value) {
+            buf.writeInt(value.size());
+
+            for (var entry : value.entrySet()) {
+                buf.writeInt(entry.getKey());
+                buf.writeBlockPos(entry.getValue());
+            }
+        }
+
+        @Override
+        public BiMap<Integer, BlockPos> read(PacketByteBuf buf) {
+            int size = buf.readInt();
+            var map = HashBiMap.<Integer, BlockPos>create(size);
+
+            for (int i = 0; i < size; i++) {
+                map.put(
+                        buf.readInt(),
+                        buf.readBlockPos()
+                );
+            }
+
+            return map;
+        }
+
+        @Override
+        public BiMap<Integer, BlockPos> copy(BiMap<Integer, BlockPos> value) {
+            return HashBiMap.create(value);
+        }
+    };
+
+    static {
+        TrackedDataHandlerRegistry.register(TDHTYPE);
+    }
+
+    private static final TrackedData<Boolean> SHOOTING = DataTracker.registerData(GhastAirShip.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<BiMap<Integer, BlockPos>> SEATS = DataTracker.registerData(GhastAirShip.class, TDHTYPE);
+
     private int fireballStrength = 1;
+
+    private float yawVelocity = 0;
 
     public GhastAirShip(EntityType<?> type, World world) {
         super(type, world, GrappleShipMod.AIRSHIP_SETTINGS);
@@ -47,6 +92,7 @@ public class GhastAirShip extends WorldShellEntity {
     protected void initDataTracker() {
         super.initDataTracker();
         this.dataTracker.startTracking(SHOOTING, false);
+        this.dataTracker.startTracking(SEATS, HashBiMap.create());
     }
 
     public void writeCustomDataToNbt(NbtCompound nbt) {
@@ -88,6 +134,14 @@ public class GhastAirShip extends WorldShellEntity {
         return new Vec3d(0, 1, 0);
     }
 
+    public BiMap<Integer, BlockPos> getSeats() {
+        return this.dataTracker.get(SEATS);
+    }
+
+    public void setSeats(BiMap<Integer, BlockPos> seats) {
+        this.dataTracker.set(SEATS, seats);
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -102,15 +156,16 @@ public class GhastAirShip extends WorldShellEntity {
 
             Vec3d velocity = getVelocity();
             velocity = velocity.multiply(0.92);
+            yawVelocity *= 0.92;
+
+            this.setYaw(getYaw() + yawVelocity);
 
             if (getPrimaryPassenger() instanceof PlayerEntity player) {
                 Vec3d look = player.getRotationVec(1.0f);
                 look = look.multiply(player.forwardSpeed * 0.04);
                 velocity = velocity.add(look);
 
-                float yaw = getYaw();
-                yaw -= player.sidewaysSpeed * 5;
-                setYaw(yaw);
+                yawVelocity -= player.sidewaysSpeed * 0.2;
             }
             this.setVelocity(velocity);
             this.velocityDirty = true;
@@ -126,27 +181,24 @@ public class GhastAirShip extends WorldShellEntity {
         super.setYaw(yaw);
         this.setRotation(new Quaternion().fromAngles(0, Math.toRadians(-yaw), 0));
     }
-//
-//    public BiMap<Entity, BlockPos> seatBlocks = HashBiMap.create();
-//
-//    @Override
-//    protected boolean canAddPassenger(Entity passenger) {
-//        return seatBlocks.containsKey(passenger);
-//    }
-//
-//    @Override
-//    public void updatePassengerPosition(Entity passenger) {
-//        BlockPos pos = seatBlocks.get(passenger);
-//        if (pos == null) {
-//            super.updatePassengerPosition(passenger);
-//        } else {
-//            passenger.setPosition(toGlobal(new Vec3d(pos.getX(), pos.getY(), pos.getZ())));
-//        }
-//    }
-//
-//    @Override
-//    protected void removePassenger(Entity passenger) {
-//        super.removePassenger(passenger);
-//        seatBlocks.remove(passenger);
-//    }
+
+    @Override
+    public void updatePassengerPosition(Entity passenger) {
+        BlockPos pos = getSeats().get(passenger.getId());
+        if (pos == null) {
+            super.updatePassengerPosition(passenger);
+        } else {
+            passenger.setPosition(toGlobal(new Vec3d(pos.getX() + 0.5f, pos.getY(), pos.getZ() + 0.5f)));
+        }
+        passenger.setYaw(passenger.getYaw() + this.yawVelocity);
+        passenger.setHeadYaw(passenger.getHeadYaw() + this.yawVelocity);
+    }
+
+    @Override
+    protected void removePassenger(Entity passenger) {
+        super.removePassenger(passenger);
+        var seats = getSeats();
+        seats.remove(passenger.getId());
+        setSeats(seats);
+    }
 }

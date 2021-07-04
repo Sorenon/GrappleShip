@@ -46,7 +46,7 @@ public class GrappleShipMod implements ModInitializer {
 
 		Registry.register(Registry.BLOCK, new Identifier(MODID, "helm"), SHIPS_HELM);
 		Registry.register(Registry.ITEM, new Identifier(MODID, "helm"), new BlockItem(SHIPS_HELM, new FabricItemSettings()));
-		Registry.register(Registry.ENTITY_TYPE, new Identifier(MODID, "ghast"), AIRSHIP_TYPE);
+		Registry.register(Registry.ENTITY_TYPE, new Identifier(MODID, "ghast_airship"), AIRSHIP_TYPE);
 
 		Registry.register(Registry.BLOCK, new Identifier(MODID, "seat"), SEAT);
 		Registry.register(Registry.ITEM, new Identifier(MODID, "seat"), new BlockItem(SEAT, new FabricItemSettings()));

@@ -1,4 +1,7 @@
 {
   "death.attack.grappleship.market_garden": "%1$s was market gardened by %2$s",
-  "death.attack.grappleship.market_garden.item": "%1$s was market gardened by %2$s using %3$s"
+  "death.attack.grappleship.market_garden.item": "%1$s was market gardened by %2$s using %3$s",
+  "item.grappleship.wrist_grapple": "Wrist Grapple",
+  "block.grappleship.seat": "Seat",
+  "entity.grappleship.ghast_airship": "Ghast Airship"
 }
