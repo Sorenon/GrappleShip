@@ -1,16 +1,23 @@
 package net.sorenon.grappleship.mixin;
 
 import com.google.common.base.Strings;
+import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.hit.HitResult;
+import net.sorenon.grappleship.GrappleShipMod;
 import net.sorenon.grappleship.accessors.LivingEntityExt;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.util.math.MatrixStack;
+import net.sorenon.grappleship.items.GrappleHookItem;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
@@ -18,7 +25,7 @@ import java.util.Objects;
 import static net.minecraft.client.gui.DrawableHelper.fill;
 
 @Mixin(InGameHud.class)
-public abstract class InGameHudMixin {
+public abstract class InGameHudMixin extends DrawableHelper {
 
     @Shadow
     @Final
@@ -26,6 +33,15 @@ public abstract class InGameHudMixin {
 
     @Shadow
     public abstract TextRenderer getTextRenderer();
+
+    @Shadow
+    private int scaledHeight;
+
+    @Shadow
+    private int scaledWidth;
+
+    @Shadow
+    protected abstract PlayerEntity getCameraPlayer();
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/InGameHud;renderStatusEffectOverlay(Lnet/minecraft/client/util/math/MatrixStack;)V"))
     void render(MatrixStack matrices, float tickDelta, CallbackInfo ci) {
@@ -39,6 +55,23 @@ public abstract class InGameHudMixin {
                 fill(matrices, 1, m - 1, 2 + k + 1, m + j - 1, -1873784752);
                 this.getTextRenderer().draw(matrices, string, 2.0F, (float) m, 14737632);
             }
+        }
+    }
+
+    @Inject(method = "renderCrosshair", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/client/gui/hud/InGameHud;drawTexture(Lnet/minecraft/client/util/math/MatrixStack;IIIIII)V"))
+    void renderCrosshair(MatrixStack matrices, CallbackInfo ci) {
+        ItemStack stack = getCameraPlayer().getMainHandStack();
+        if (stack.getItem() != GrappleShipMod.WRIST_GRAPPLE_ITEM) {
+            stack = getCameraPlayer().getOffHandStack();
+            if (stack.getItem() != GrappleShipMod.WRIST_GRAPPLE_ITEM) {
+                return;
+            }
+        }
+        HitResult res = GrappleShipMod.WRIST_GRAPPLE_ITEM.raycast(getCameraPlayer(), stack);
+        if (res.getType() != HitResult.Type.MISS) {
+            int j = this.scaledHeight / 2 - 7 + 16;
+            int k = this.scaledWidth / 2 - 8;
+            this.drawTexture(matrices, k, j, 68, 94, 16, 16);
         }
     }
 }

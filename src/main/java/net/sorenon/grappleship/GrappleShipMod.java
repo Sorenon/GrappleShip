@@ -22,10 +22,12 @@ public class GrappleShipMod implements ModInitializer {
 	public static final Identifier S2C_START_GRAPPLE = new Identifier("grappleship", "s_grapple_start");
 	public static final Identifier S2C_END_GRAPPLE = new Identifier("grappleship", "s_grapple_end");
 
+	public static final WristGrappleItem WRIST_GRAPPLE_ITEM = new WristGrappleItem(new FabricItemSettings().maxCount(1));
+
 	@Override
 	public void onInitialize() {
 		Registry.register(Registry.ITEM, new Identifier("grappleship", "grapple"), new GrappleHookItem(new FabricItemSettings().maxCount(1)));
-		Registry.register(Registry.ITEM, new Identifier("grappleship", "grapple2"), new WristGrappleItem(new FabricItemSettings().maxCount(1)));
+		Registry.register(Registry.ITEM, new Identifier("grappleship", "grapple2"), WRIST_GRAPPLE_ITEM);
 
 		ServerPlayNetworking.registerGlobalReceiver(C2S_START_GRAPPLE, (server, player, handler, buf, responseSender) -> {
 			Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());

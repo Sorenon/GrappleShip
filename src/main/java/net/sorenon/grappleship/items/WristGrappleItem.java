@@ -1,5 +1,6 @@
 package net.sorenon.grappleship.items;
 
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Box;
@@ -40,32 +41,18 @@ public class WristGrappleItem extends Item {
                 return new TypedActionResult<>(ActionResult.PASS, user.getStackInHand(hand));
             }
 
-            double distance = 10;
-            Vec3d start = user.getCameraPosVec(1.0f);
-            Vec3d look = user.getRotationVec(1.0f);
-            Vec3d end = start.add(look.x * distance, look.y * distance, look.z * distance);
-            HitResult res = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, user));
+            HitResult res = raycast(user, user.getStackInHand(hand));
 
-            double distanceSqr = distance * distance;
-            if (res != null) {
-                distanceSqr = res.getPos().squaredDistanceTo(start);
-            }
-
-            Box box = user.getBoundingBox().stretch(look.multiply(distance)).expand(1.0D, 1.0D, 1.0D);
-            EntityHitResult entityHitResult = ProjectileUtil.raycast(user, start, end, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), distanceSqr);
-
-            if (entityHitResult != null && entityHitResult.getPos().squaredDistanceTo(start) < distanceSqr) {
+            if (res instanceof EntityHitResult eRes) {
                 var buf = PacketByteBufs.create();
-                Vec3d pos = entityHitResult.getPos().subtract(entityHitResult.getEntity().getPos());
+                Vec3d pos = eRes.getPos().subtract(eRes.getEntity().getPos());
                 buf.writeDouble(pos.x);
                 buf.writeDouble(pos.y);
                 buf.writeDouble(pos.z);
-                buf.writeInt(entityHitResult.getEntity().getId());
+                buf.writeInt(eRes.getEntity().getId());
                 ClientPlayNetworking.send(GrappleShipMod.C2S_START_GRAPPLE, buf);
-                GrappleHookMovement.start(user, pos, entityHitResult.getEntity());
-                res = entityHitResult;
-            }
-            else if (res != null && res.getType() != HitResult.Type.MISS) {
+                GrappleHookMovement.start(user, pos, eRes.getEntity());
+            } else if (res.getType() == HitResult.Type.BLOCK) {
                 var buf = PacketByteBufs.create();
                 buf.writeDouble(res.getPos().x);
                 buf.writeDouble(res.getPos().y);
@@ -75,7 +62,7 @@ public class WristGrappleItem extends Item {
                 GrappleHookMovement.start(user, res.getPos(), null);
             }
 
-            if (res != null && res.getType() != HitResult.Type.MISS) {
+            if (res.getType() != HitResult.Type.MISS) {
                 user.getAbilities().flying = false;
 
                 user.setCurrentHand(hand);
@@ -96,6 +83,20 @@ public class WristGrappleItem extends Item {
                 movement.end(user, false);
             }
         }
+    }
+
+    public double getLength(ItemStack stack) {
+        var tag = stack.getOrCreateTag();
+        if (tag.contains("length", NbtType.DOUBLE)) {
+            return tag.getDouble("length");
+        } else {
+            tag.putDouble("length", 10);
+            return tag.getDouble("length");
+        }
+    }
+
+    public HitResult raycast(LivingEntity entity, ItemStack stack) {
+        return raycast(entity, getLength(stack));
     }
 
     public HitResult raycast(LivingEntity user, double distance) {
