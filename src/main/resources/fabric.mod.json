@@ -3,7 +3,7 @@
   "id": "grappleship",
   "version": "${version}",
 
-  "name": "Grapple Ship",
+  "name": "Grapple-Ship",
   "description": "Sorenon's 1.17 Modfest submission",
   "authors": [
     "Sorenon"
@@ -12,7 +12,7 @@
     "sources": "https://github.com/Sorenon/grappleship"
   },
 
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/grappleship/icon.png",
 
   "environment": "*",

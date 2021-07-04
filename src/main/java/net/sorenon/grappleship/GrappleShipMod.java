@@ -18,6 +18,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
+import net.sorenon.grappleship.worldshell.CommandStickItem;
 import net.sorenon.grappleship.worldshell.GhastAirShip;
 import net.sorenon.grappleship.worldshell.SeatBlock;
 import net.sorenon.grappleship.worldshell.ShipsHelm;
@@ -45,6 +46,7 @@ public class GrappleShipMod implements ModInitializer {
 	public void onInitialize() {
 		Registry.register(Registry.ITEM, new Identifier(MODID, "grapple"), new GrappleHookItem(new FabricItemSettings().maxCount(1)));
 		Registry.register(Registry.ITEM, new Identifier(MODID, "wrist_grapple"), WRIST_GRAPPLE_ITEM);
+		Registry.register(Registry.ITEM, new Identifier(MODID, "command_stick"), new CommandStickItem());
 
 		Registry.register(Registry.BLOCK, new Identifier(MODID, "helm"), SHIPS_HELM);
 		Registry.register(Registry.ITEM, new Identifier(MODID, "helm"), new BlockItem(SHIPS_HELM, new FabricItemSettings()));

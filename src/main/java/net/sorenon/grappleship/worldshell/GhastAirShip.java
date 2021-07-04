@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -14,11 +15,15 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtTypes;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldEvents;
 import net.snakefangox.worldshell.entity.WorldShellEntity;
 import net.snakefangox.worldshell.kevlar.PhysicsWorld;
 import net.snakefangox.worldshell.math.Quaternion;
@@ -68,11 +73,16 @@ public class GhastAirShip extends WorldShellEntity {
     }
 
     private static final TrackedData<Boolean> SHOOTING = DataTracker.registerData(GhastAirShip.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> READY = DataTracker.registerData(GhastAirShip.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<BiMap<Integer, BlockPos>> SEATS = DataTracker.registerData(GhastAirShip.class, TDHTYPE);
 
     private int fireballStrength = 1;
+    private int fireballCooldown = 40;
 
     private float yawVelocity = 0;
+
+    private int shootingCooldownTimer = 0;
+    public int fireballCooldownTimer = 0;
 
     public GhastAirShip(EntityType<?> type, World world) {
         super(type, world, GrappleShipMod.AIRSHIP_SETTINGS);
@@ -90,21 +100,57 @@ public class GhastAirShip extends WorldShellEntity {
         return this.fireballStrength;
     }
 
+    public boolean fireball(PlayerEntity rider) {
+        if (rider != getPrimaryPassenger()) return false;
+
+        if (!dataTracker.get(READY)) return false;
+
+        if (this.fireballStrength == 0) return false;
+
+        if (world.isClient) {
+            return true;
+        }
+
+        if (!this.isSilent()) {
+            world.syncWorldEvent(null, WorldEvents.GHAST_SHOOTS, this.getBlockPos(), 0);
+        }
+        this.playSound(SoundEvents.ENTITY_GHAST_SHOOT, 1, 1);
+
+        this.dataTracker.set(SHOOTING, true);
+        this.shootingCooldownTimer = 20;
+        this.dataTracker.set(READY, false);
+        this.fireballCooldownTimer = this.fireballCooldown;
+
+        Vec3d fireballDir = rider.getRotationVec(1.0f);
+        FireballEntity fireballEntity = new FireballEntity(world, rider, fireballDir.x, fireballDir.y, fireballDir.z, this.getFireballStrength());
+
+        Vec3d look = this.getRotationVec(1.0F);
+//        fireballEntity.setPosition(this.getX() + look.x * 4, this.getBoundingBox().minY + 2f, this.getZ() + look.z * 4);
+        fireballEntity.setPosition(this.getX(), this.getBoundingBox().minY + 2f, this.getZ());
+        world.spawnEntity(fireballEntity);
+        return true;
+    }
+
     protected void initDataTracker() {
         super.initDataTracker();
         this.dataTracker.startTracking(SHOOTING, false);
         this.dataTracker.startTracking(SEATS, HashBiMap.create());
+        this.dataTracker.startTracking(READY, true);
     }
 
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
         nbt.putByte("ExplosionPower", (byte) this.fireballStrength);
+        nbt.putInt("Cooldown", (byte) this.fireballCooldown);
     }
 
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
         if (nbt.contains("ExplosionPower", 99)) {
             this.fireballStrength = nbt.getByte("ExplosionPower");
+        }
+        if (nbt.contains("Cooldown", NbtType.INT)) {
+            this.fireballCooldown = nbt.getByte("Cooldown");
         }
     }
 
@@ -146,6 +192,24 @@ public class GhastAirShip extends WorldShellEntity {
     @Override
     public void tick() {
         super.tick();
+        if (!world.isClient) {
+            if (shootingCooldownTimer > 0) {
+                shootingCooldownTimer -= 1;
+                if (shootingCooldownTimer == 0) {
+                    dataTracker.set(SHOOTING, false);
+                }
+            }
+            if (fireballCooldownTimer > 0) {
+                fireballCooldownTimer -= 1;
+                if (fireballCooldownTimer == 0) {
+                    dataTracker.set(READY, true);
+                    if (!this.isSilent()) {
+                        world.syncWorldEvent(null, WorldEvents.GHAST_WARNS, this.getBlockPos(), 0);
+                    }
+                }
+            }
+        }
+
         if (this.isLogicalSideForUpdatingMovement()) {
             this.updateTrackedPosition(this.getPos());
 

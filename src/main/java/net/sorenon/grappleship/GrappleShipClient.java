@@ -13,6 +13,7 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
 import net.sorenon.grappleship.accessors.LivingEntityExt;
 import net.sorenon.grappleship.movement.GrappleHookMovement;
@@ -80,10 +81,18 @@ public class GrappleShipClient implements ClientModInitializer {
 
                 int endLight = MinecraftClient.getInstance().getEntityRenderDispatcher().getLight(entity, context.tickDelta());//15728880
 
+                Vec3d endPos = entity.getLerpedPos(context.tickDelta()).add(0, entity.getHeight() / 2, 0);
+                Vec3d handOffset;
+                if (((LivingEntity)entity).getActiveHand() == Hand.MAIN_HAND) {
+                    handOffset = new Vec3d(0, 0, 0.3).rotateY((float) Math.toRadians(-entity.getYaw(context.tickDelta()) - 90));
+                } else {
+                    handOffset = new Vec3d(0, 0, -0.3).rotateY((float) Math.toRadians(-entity.getYaw(context.tickDelta()) - 90));
+                }
+
                 GrappleFeatureRenderer.renderChain(
                         matrices,
                         movement.getTarget(),
-                        entity.getLerpedPos(context.tickDelta()).add(0, entity.getHeight() / 2, 0),
+                        endPos.add(handOffset),
                         context.consumers(),
                         endLight,
                         endLight

@@ -1,5 +1,6 @@
 package net.sorenon.grappleship.mixin;
 
+import net.minecraft.util.Hand;
 import net.sorenon.grappleship.GrappleFeatureRenderer;
 import net.sorenon.grappleship.accessors.LivingEntityExt;
 import net.sorenon.grappleship.movement.GrappleHookMovement;
@@ -25,10 +26,17 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
         if (ext.getMovement() instanceof GrappleHookMovement movement) {
             matrices.push();
 
+            Vec3d handOffset;
+            if (entity.getActiveHand() == Hand.MAIN_HAND) {
+                handOffset = new Vec3d(0, 0, 0.3).rotateY((float) Math.toRadians(-entity.getYaw(tickDelta) - 90));
+            } else {
+                handOffset = new Vec3d(0, 0, -0.3).rotateY((float) Math.toRadians(-entity.getYaw(tickDelta) - 90));
+            }
+
             GrappleFeatureRenderer.renderChain(
                     matrices,
                     movement.getTarget().subtract(entity.getLerpedPos(tickDelta)),
-                    new Vec3d(0,entity.getHeight() / 2,0),
+                    new Vec3d(0,entity.getHeight() / 2,0).add(handOffset),
                     vertexConsumers,
                     light,
                     light
