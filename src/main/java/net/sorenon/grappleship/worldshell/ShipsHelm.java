@@ -16,7 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.snakefangox.worldshell.transfer.WorldShellConstructor;
 import net.snakefangox.worldshell.world.Worldshell;
-import net.sorenon.grappleship.GrappleShipMod;
+import net.sorenon.grappleship.GrappleshipMod;
 import org.jetbrains.annotations.Nullable;
 
 public class ShipsHelm extends Block {
@@ -32,7 +32,7 @@ public class ShipsHelm extends Block {
 		if (state.get(CONSTRUCTING)) return ActionResult.FAIL;
 		if (!(world instanceof ServerWorld)) return ActionResult.SUCCESS;
 
-		WorldShellConstructor<GhastAirShip> airshipConstructor = WorldShellConstructor.create((ServerWorld) world, GrappleShipMod.AIRSHIP_TYPE, pos, new BlockScan(pos, world));
+		WorldShellConstructor<GhastAirShip> airshipConstructor = WorldShellConstructor.create((ServerWorld) world, GrappleshipMod.AIRSHIP_TYPE, pos, new BlockScan(pos, world));
 		world.setBlockState(pos, state.with(CONSTRUCTING, true));
 		airshipConstructor.construct();
 		return ActionResult.SUCCESS;

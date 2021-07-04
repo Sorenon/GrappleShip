@@ -4,7 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.text.TranslatableText;
-import net.sorenon.grappleship.GrappleShipClient;
+import net.sorenon.grappleship.GrappleshipClient;
 import net.sorenon.grappleship.worldshell.GhastAirShip;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,7 +23,7 @@ public class ClientPlayNetworkHandlerMixin {
     @Inject(method = "onEntityPassengersSet", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/InGameHud;setOverlayMessage(Lnet/minecraft/text/Text;Z)V", shift = At.Shift.AFTER))
     void message(EntityPassengersSetS2CPacket packet, CallbackInfo ci) {
         if (client.player.getVehicle() instanceof GhastAirShip) {
-            this.client.inGameHud.setOverlayMessage(new TranslatableText("mount.onboard", GrappleShipClient.keyBinding.getBoundKeyLocalizedText()), false);
+            this.client.inGameHud.setOverlayMessage(new TranslatableText("mount.onboard", GrappleshipClient.keyBinding.getBoundKeyLocalizedText()), false);
         }
     }
 }

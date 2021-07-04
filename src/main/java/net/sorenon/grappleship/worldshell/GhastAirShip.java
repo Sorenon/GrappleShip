@@ -17,7 +17,6 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtTypes;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -27,10 +26,9 @@ import net.minecraft.world.WorldEvents;
 import net.snakefangox.worldshell.entity.WorldShellEntity;
 import net.snakefangox.worldshell.kevlar.PhysicsWorld;
 import net.snakefangox.worldshell.math.Quaternion;
-import net.sorenon.grappleship.GrappleShipMod;
+import net.sorenon.grappleship.GrappleshipMod;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -85,7 +83,7 @@ public class GhastAirShip extends WorldShellEntity {
     public int fireballCooldownTimer = 0;
 
     public GhastAirShip(EntityType<?> type, World world) {
-        super(type, world, GrappleShipMod.AIRSHIP_SETTINGS);
+        super(type, world, GrappleshipMod.AIRSHIP_SETTINGS);
     }
 
     public boolean isShooting() {

@@ -7,7 +7,7 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
-import net.sorenon.grappleship.GrappleShipMod;
+import net.sorenon.grappleship.GrappleshipMod;
 import net.sorenon.grappleship.accessors.LivingEntityExt;
 import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -53,7 +53,7 @@ public class WristGrappleItem extends Item {
                 buf.writeDouble(pos.y);
                 buf.writeDouble(pos.z);
                 buf.writeInt(eRes.getEntity().getId());
-                ClientPlayNetworking.send(GrappleShipMod.C2S_START_GRAPPLE, buf);
+                ClientPlayNetworking.send(GrappleshipMod.C2S_START_GRAPPLE, buf);
                 GrappleHookMovement.start(user, pos, eRes.getEntity());
             } else if (res.getType() == HitResult.Type.BLOCK) {
                 var buf = PacketByteBufs.create();
@@ -61,7 +61,7 @@ public class WristGrappleItem extends Item {
                 buf.writeDouble(res.getPos().y);
                 buf.writeDouble(res.getPos().z);
                 buf.writeInt(0);
-                ClientPlayNetworking.send(GrappleShipMod.C2S_START_GRAPPLE, buf);
+                ClientPlayNetworking.send(GrappleshipMod.C2S_START_GRAPPLE, buf);
                 GrappleHookMovement.start(user, res.getPos(), null);
             }
 
@@ -82,7 +82,7 @@ public class WristGrappleItem extends Item {
             if (ext.getMovement() instanceof GrappleHookMovement movement) {
                 var buf = PacketByteBufs.create();
                 buf.writeBoolean(false);
-                ClientPlayNetworking.send(GrappleShipMod.C2S_END_GRAPPLE, buf);
+                ClientPlayNetworking.send(GrappleshipMod.C2S_END_GRAPPLE, buf);
                 movement.end(user, false);
             }
         }

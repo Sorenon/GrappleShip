@@ -23,7 +23,7 @@ import net.sorenon.grappleship.worldshell.GhastAirShip;
 import net.sorenon.grappleship.worldshell.SeatBlock;
 import net.sorenon.grappleship.worldshell.ShipsHelm;
 
-public class GrappleShipMod implements ModInitializer {
+public class GrappleshipMod implements ModInitializer {
 
 	public static final String MODID = "grappleship";
 

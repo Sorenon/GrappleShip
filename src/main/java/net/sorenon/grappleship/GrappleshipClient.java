@@ -20,7 +20,7 @@ import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.sorenon.grappleship.worldshell.client.GhastShipRenderer;
 import org.lwjgl.glfw.GLFW;
 
-public class GrappleShipClient implements ClientModInitializer {
+public class GrappleshipClient implements ClientModInitializer {
 
     public static KeyBinding keyBinding;
 
@@ -35,13 +35,13 @@ public class GrappleShipClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (keyBinding.wasPressed()) {
-                ClientPlayNetworking.send(GrappleShipMod.C2S_FORCE_DISMOUNT, PacketByteBufs.create());
+                ClientPlayNetworking.send(GrappleshipMod.C2S_FORCE_DISMOUNT, PacketByteBufs.create());
             }
         });
 
-        EntityRendererRegistry.INSTANCE.register(GrappleShipMod.AIRSHIP_TYPE, GhastShipRenderer::new);
+        EntityRendererRegistry.INSTANCE.register(GrappleshipMod.AIRSHIP_TYPE, GhastShipRenderer::new);
 
-        ClientPlayNetworking.registerGlobalReceiver(GrappleShipMod.S2C_START_GRAPPLE, (client, handler, buf, responseSender) -> {
+        ClientPlayNetworking.registerGlobalReceiver(GrappleshipMod.S2C_START_GRAPPLE, (client, handler, buf, responseSender) -> {
             Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
             int entityTargetId = buf.readInt();
             int id = buf.readInt();
@@ -53,7 +53,7 @@ public class GrappleShipClient implements ClientModInitializer {
             });
         });
 
-        ClientPlayNetworking.registerGlobalReceiver(GrappleShipMod.S2C_END_GRAPPLE, (client, handler, buf, responseSender) -> {
+        ClientPlayNetworking.registerGlobalReceiver(GrappleshipMod.S2C_END_GRAPPLE, (client, handler, buf, responseSender) -> {
             boolean jump = buf.readBoolean();
             int id = buf.readInt();
 

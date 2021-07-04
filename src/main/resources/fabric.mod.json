@@ -3,8 +3,8 @@
   "id": "grappleship",
   "version": "${version}",
 
-  "name": "Grapple-Ship",
-  "description": "Sorenon's 1.17 Modfest submission",
+  "name": "Grappleship",
+  "description": "Adds grappling hooks for swinging and slingshoting, and the ability to tame ghasts as a volatile form of airship",
   "authors": [
     "Sorenon"
   ],
@@ -18,10 +18,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.sorenon.grappleship.GrappleShipMod"
+      "net.sorenon.grappleship.GrappleshipMod"
     ],
     "client": [
-      "net.sorenon.grappleship.GrappleShipClient"
+      "net.sorenon.grappleship.GrappleshipClient"
     ]
   },
   "mixins": [

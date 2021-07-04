@@ -1,6 +1,6 @@
 package net.sorenon.grappleship.items;
 
-import net.sorenon.grappleship.GrappleShipMod;
+import net.sorenon.grappleship.GrappleshipMod;
 import net.sorenon.grappleship.accessors.LivingEntityExt;
 import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -31,7 +31,7 @@ public class GrappleHookItem extends Item {
             if (ext.getMovement() instanceof GrappleHookMovement movement) {
                 var buf = PacketByteBufs.create();
                 buf.writeBoolean(false);
-                ClientPlayNetworking.send(GrappleShipMod.C2S_END_GRAPPLE, buf);
+                ClientPlayNetworking.send(GrappleshipMod.C2S_END_GRAPPLE, buf);
 
                 movement.end(user, false);
 
@@ -48,7 +48,7 @@ public class GrappleHookItem extends Item {
                     buf.writeDouble(res.getPos().x);
                     buf.writeDouble(res.getPos().y);
                     buf.writeDouble(res.getPos().z);
-                    ClientPlayNetworking.send(GrappleShipMod.C2S_START_GRAPPLE, buf);
+                    ClientPlayNetworking.send(GrappleshipMod.C2S_START_GRAPPLE, buf);
 
                     user.getAbilities().flying = false;
 
