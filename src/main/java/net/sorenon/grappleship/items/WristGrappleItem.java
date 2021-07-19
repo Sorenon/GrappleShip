@@ -1,6 +1,7 @@
 package net.sorenon.grappleship.items;
 
 import net.fabricmc.fabric.api.util.NbtType;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -24,6 +25,9 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.sorenon.grappleship.worldshell.GhastAirShip;
+
+import java.util.function.Predicate;
 
 public class WristGrappleItem extends Item {
     public WristGrappleItem(Settings settings) {
@@ -112,6 +116,30 @@ public class WristGrappleItem extends Item {
         return tag.getBoolean("LikesEntities");
     }
 
+    public double getSpeed(ItemStack stack) {
+        var tag = stack.getOrCreateTag();
+        if (!tag.contains("Speed", NbtType.DOUBLE)) {
+            tag.putDouble("Speed", 0.05 * 3);
+        }
+        return tag.getDouble("Speed");
+    }
+
+    public double getHandling(ItemStack stack) {
+        var tag = stack.getOrCreateTag();
+        if (!tag.contains("Handling", NbtType.DOUBLE)) {
+            tag.putDouble("Handling", 0.5);
+        }
+        return tag.getDouble("Handling");
+    }
+
+    public double getDamping(ItemStack stack) {
+        var tag = stack.getOrCreateTag();
+        if (!tag.contains("Damping", NbtType.DOUBLE)) {
+            tag.putDouble("Damping", 0.8);
+        }
+        return tag.getDouble("Damping");
+    }
+
     public HitResult raycast(LivingEntity entity, ItemStack stack) {
         return raycast(entity, getLength(stack), likesBlocks(stack), likesEntities(stack));
     }
@@ -122,19 +150,23 @@ public class WristGrappleItem extends Item {
         Vec3d end = start.add(look.x * distance, look.y * distance, look.z * distance);
         HitResult res = user.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, user));
 
-        if (likesEntities) {
-            double distanceSqr = distance * distance;
-            if (res != null) {
-                distanceSqr = res.getPos().squaredDistanceTo(start);
-            }
-
-            Box box = user.getBoundingBox().stretch(look.multiply(distance)).expand(1.0D, 1.0D, 1.0D);
-            EntityHitResult entityHitResult = ProjectileUtil.raycast(user, start, end, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), distanceSqr);
-
-            if (entityHitResult != null && entityHitResult.getPos().squaredDistanceTo(start) < distanceSqr) {
-                res = entityHitResult;
-            }
+        double distanceSqr = distance * distance;
+        if (res != null) {
+            distanceSqr = res.getPos().squaredDistanceTo(start);
         }
+
+        Box box = user.getBoundingBox().stretch(look.multiply(distance)).expand(1.0D, 1.0D, 1.0D);
+        Predicate<Entity> predicate = (entityx) -> !entityx.isSpectator() && entityx.collides();
+        if (likesEntities) {
+            predicate = (entityx) -> entityx instanceof GhastAirShip;
+        }
+
+        EntityHitResult entityHitResult = ProjectileUtil.raycast(user, start, end, box, predicate, distanceSqr);
+
+        if (entityHitResult != null && entityHitResult.getPos().squaredDistanceTo(start) < distanceSqr) {
+            res = entityHitResult;
+        }
+
 
         if (!likesBlocks && res instanceof BlockHitResult) {
             return BlockHitResult.createMissed(Vec3d.ZERO, Direction.DOWN, BlockPos.ORIGIN);

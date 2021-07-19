@@ -1,5 +1,6 @@
 package net.sorenon.grappleship;
 
+import com.google.common.collect.HashBiMap;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -14,9 +15,11 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.sorenon.grappleship.accessors.LivingEntityExt;
 import net.sorenon.grappleship.movement.GrappleHookMovement;
+import net.sorenon.grappleship.worldshell.GhastAirShip;
 import net.sorenon.grappleship.worldshell.client.GhastShipRenderer;
 import org.lwjgl.glfw.GLFW;
 
@@ -67,6 +70,26 @@ public class GrappleshipClient implements ClientModInitializer {
             });
         });
 
+        ClientPlayNetworking.registerGlobalReceiver(GrappleshipMod.S2C_SEATS, (client, handler, buf, responseSender) -> {
+            int entityID = buf.readInt();
+
+            int size = buf.readInt();
+            var map = HashBiMap.<Integer, BlockPos>create(size);
+
+            for (int i = 0; i < size; i++) {
+                map.put(
+                        buf.readInt(),
+                        buf.readBlockPos()
+                );
+            }
+
+            client.execute(() -> {
+                var entity = client.world.getEntityById(entityID);
+                if (entity instanceof GhastAirShip airShip) {
+                    airShip.setSeats(map);
+                }
+            });
+        });
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             Entity entity = context.camera().getFocusedEntity();

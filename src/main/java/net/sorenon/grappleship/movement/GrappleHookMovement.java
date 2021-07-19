@@ -1,11 +1,13 @@
 package net.sorenon.grappleship.movement;
 
+import com.badlogic.gdx.physics.bullet.collision._btMprSimplex_t;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
@@ -13,6 +15,7 @@ import net.minecraft.util.math.Vec3d;
 import net.sorenon.grappleship.GrappleshipMod;
 import net.sorenon.grappleship.accessors.LivingEntityExt;
 import net.sorenon.grappleship.items.GrappleHookItem;
+import net.sorenon.grappleship.items.WristGrappleItem;
 import net.sorenon.grappleship.mixin.LivingEntityAcc;
 import net.sorenon.grappleship.mixin.ServerPlayNetworkHandlerAcc;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +26,10 @@ public class GrappleHookMovement extends Movement {
     private final Vec3d hitPos;
 
     public boolean hasNotJumped = false;
+
+    public double damping = 0.8;
+    public double handling = 0.5;
+    public double speed = 0.05 * 3;
 
     public GrappleHookMovement(Vec3d hit) {
         this.entityTarget = null;
@@ -46,6 +53,14 @@ public class GrappleHookMovement extends Movement {
     public Movement travel(LivingEntity entity, Vec3d input, boolean jumping) {
         if (entity instanceof ServerPlayerEntity player) {
             ((ServerPlayNetworkHandlerAcc) player.networkHandler).setFloatingTicks(0);
+        }
+
+        if (!(entity.getActiveItem().getItem() instanceof WristGrappleItem)) {
+            var buf = PacketByteBufs.create();
+            buf.writeBoolean(false);
+            ClientPlayNetworking.send(GrappleshipMod.C2S_END_GRAPPLE, buf);
+
+            return end(entity, false).travel(entity, input, jumping);
         }
 
         if (jumping && hasNotJumped) {
@@ -99,15 +114,13 @@ public class GrappleHookMovement extends Movement {
 
             Vec3d dir = delta.normalize();
             Vec3d addVel;
-            double damping = 0.8;
+            double damping = this.damping;
 //            double damping = 0.85;
             Vec3d wishDir = inputToWishDir(input, entity.getYaw()); //TODO tilt wish dir
 //                dir = wishDir.add(dir.multiply(1.6)).normalize();
-            dir = wishDir.add(dir.multiply(1.5)).normalize();
+            dir = wishDir.add(dir.multiply(1 + handling)).normalize();
 
-//                addVel = dir.multiply(0.05f * 2.5);
-            addVel = dir.multiply(0.05f * 3); //<-fun :)
-//                addVel = dir.multiply(0.05f * 2);
+            addVel = dir.multiply(speed);
             if (delta.length() < 1) {
                 damping = 0.25;
             }
@@ -187,14 +200,30 @@ public class GrappleHookMovement extends Movement {
         if (entity instanceof PlayerEntity player) {
             player.getAbilities().flying = false;
         }
-//        ((LivingEntityExt) entity).setMovement(new GrappleHookMovement(pos));
+
+        GrappleHookMovement grappleHookMovement;
         if (entityTarget == null) {
-            ((LivingEntityExt) entity).setMovement(new GrappleHookMovement(pos));
+            grappleHookMovement = new GrappleHookMovement(pos);
+            ((LivingEntityExt) entity).setMovement(grappleHookMovement);
         } else {
-            ((LivingEntityExt) entity).setMovement(new GrappleHookMovement(entityTarget, pos));
+            grappleHookMovement = new GrappleHookMovement(entityTarget, pos);
+            ((LivingEntityExt) entity).setMovement(grappleHookMovement);
             if (entityTarget instanceof LivingEntityExt livingEntity && !(entityTarget instanceof PlayerEntity)) {
-                livingEntity.setMovement(new FrozenMovement((movement, entity1, input, jumping) -> entity.isRemoved() || !(((LivingEntityExt)entity).getMovement() instanceof GrappleHookMovement)));
+                livingEntity.setMovement(new FrozenMovement((movement, entity1, input, jumping) -> entity.isRemoved() || !(((LivingEntityExt) entity).getMovement() instanceof GrappleHookMovement)));
             }
+        }
+
+        ItemStack stack = entity.getMainHandStack();
+        if (!(stack.getItem() instanceof WristGrappleItem)) {
+            stack = entity.getOffHandStack();
+        }
+        if (stack.getItem() instanceof WristGrappleItem item) {
+            double speed = item.getSpeed(stack);
+            double handling = item.getHandling(stack);
+            double damping = item.getDamping(stack);
+            grappleHookMovement.speed = speed;
+            grappleHookMovement.handling = handling;
+            grappleHookMovement.damping = damping;
         }
     }
 

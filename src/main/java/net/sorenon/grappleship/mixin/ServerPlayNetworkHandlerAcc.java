@@ -9,4 +9,7 @@ public interface ServerPlayNetworkHandlerAcc {
 
     @Accessor
     void setFloatingTicks(int ticks);
+
+    @Accessor
+    void setVehicleFloatingTicks(int ticks);
 }

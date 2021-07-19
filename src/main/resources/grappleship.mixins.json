@@ -10,8 +10,8 @@
     "ServerPlayNetworkHandlerAcc"
   ],
   "client": [
-    "ClientPlayNetworkHandlerMixin",
     "ClientPlayerEntityMixin",
+    "ClientPlayNetworkHandlerMixin",
     "DebugHudMixin",
     "InGameHudMixin",
     "LivingEntityRendererMixin"

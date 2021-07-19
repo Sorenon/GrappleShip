@@ -1,23 +1,22 @@
 package net.sorenon.grappleship;
 
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.BlockItem;
-import net.snakefangox.worldshell.entity.WorldShellEntityType;
-import net.snakefangox.worldshell.entity.WorldShellSettings;
-import net.snakefangox.worldshell.transfer.ConflictSolver;
-import net.sorenon.grappleship.accessors.LivingEntityExt;
-import net.sorenon.grappleship.items.GrappleHookItem;
-import net.sorenon.grappleship.items.WristGrappleItem;
-import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.EntityType;
+import net.minecraft.item.BlockItem;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
+import net.snakefangox.worldshell.entity.WorldShellEntityType;
+import net.snakefangox.worldshell.entity.WorldShellSettings;
+import net.snakefangox.worldshell.transfer.ConflictSolver;
+import net.sorenon.grappleship.accessors.LivingEntityExt;
+import net.sorenon.grappleship.items.WristGrappleItem;
+import net.sorenon.grappleship.movement.GrappleHookMovement;
 import net.sorenon.grappleship.worldshell.CommandStickItem;
 import net.sorenon.grappleship.worldshell.GhastAirShip;
 import net.sorenon.grappleship.worldshell.SeatBlock;
@@ -34,6 +33,7 @@ public class GrappleshipMod implements ModInitializer {
 	public static final Identifier S2C_END_GRAPPLE = new Identifier(MODID, "s_grapple_end");
 
 	public static final Identifier C2S_FORCE_DISMOUNT = new Identifier(MODID, "force_dismount");
+	public static final Identifier S2C_SEATS = new Identifier(MODID, "seats");
 
 	public static final WristGrappleItem WRIST_GRAPPLE_ITEM = new WristGrappleItem(new FabricItemSettings().maxCount(1));
 
@@ -44,7 +44,7 @@ public class GrappleshipMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		Registry.register(Registry.ITEM, new Identifier(MODID, "grapple"), new GrappleHookItem(new FabricItemSettings().maxCount(1)));
+//		Registry.register(Registry.ITEM, new Identifier(MODID, "grapple"), new GrappleHookItem(new FabricItemSettings().maxCount(1)));
 		Registry.register(Registry.ITEM, new Identifier(MODID, "wrist_grapple"), WRIST_GRAPPLE_ITEM);
 		Registry.register(Registry.ITEM, new Identifier(MODID, "command_stick"), new CommandStickItem());
 

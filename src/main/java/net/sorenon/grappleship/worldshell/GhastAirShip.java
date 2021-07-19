@@ -4,6 +4,9 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -12,14 +15,17 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
@@ -27,6 +33,7 @@ import net.snakefangox.worldshell.entity.WorldShellEntity;
 import net.snakefangox.worldshell.kevlar.PhysicsWorld;
 import net.snakefangox.worldshell.math.Quaternion;
 import net.sorenon.grappleship.GrappleshipMod;
+import net.sorenon.grappleship.mixin.ServerPlayNetworkHandlerAcc;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -34,45 +41,9 @@ import java.util.Set;
 
 public class GhastAirShip extends WorldShellEntity {
 
-    private static final TrackedDataHandler<BiMap<Integer, BlockPos>> TDHTYPE = new TrackedDataHandler<>() {
-        @Override
-        public void write(PacketByteBuf buf, BiMap<Integer, BlockPos> value) {
-            buf.writeInt(value.size());
-
-            for (var entry : value.entrySet()) {
-                buf.writeInt(entry.getKey());
-                buf.writeBlockPos(entry.getValue());
-            }
-        }
-
-        @Override
-        public BiMap<Integer, BlockPos> read(PacketByteBuf buf) {
-            int size = buf.readInt();
-            var map = HashBiMap.<Integer, BlockPos>create(size);
-
-            for (int i = 0; i < size; i++) {
-                map.put(
-                        buf.readInt(),
-                        buf.readBlockPos()
-                );
-            }
-
-            return map;
-        }
-
-        @Override
-        public BiMap<Integer, BlockPos> copy(BiMap<Integer, BlockPos> value) {
-            return HashBiMap.create(value);
-        }
-    };
-
-    static {
-        TrackedDataHandlerRegistry.register(TDHTYPE);
-    }
-
     private static final TrackedData<Boolean> SHOOTING = DataTracker.registerData(GhastAirShip.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> READY = DataTracker.registerData(GhastAirShip.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<BiMap<Integer, BlockPos>> SEATS = DataTracker.registerData(GhastAirShip.class, TDHTYPE);
+    private BiMap<Integer, BlockPos> SEATS = HashBiMap.create();
 
     private int fireballStrength = 1;
     private int fireballCooldown = 40;
@@ -119,20 +90,61 @@ public class GhastAirShip extends WorldShellEntity {
         this.dataTracker.set(READY, false);
         this.fireballCooldownTimer = this.fireballCooldown;
 
-        Vec3d fireballDir = rider.getRotationVec(1.0f);
+        Vec3d wantedPos = null;
+        {
+            double d = 160;
+            HitResult result = rider.raycast(d, 1.0f, false);
+            Vec3d start = rider.getCameraPosVec(1.0f);
+            double d2 = d * d;
+
+            if (result != null) {
+                d2 = result.getPos().squaredDistanceTo(start);
+            }
+
+            Vec3d look = rider.getRotationVec(1.0F);
+            Vec3d end = start.add(look.x * d, look.y * d, look.z * d);
+            Box box = rider.getBoundingBox().stretch(look.multiply(d)).expand(1.0D, 1.0D, 1.0D);
+            EntityHitResult entityHitResult = ProjectileUtil.raycast(rider, start, end, box, (entityx) -> !entityx.isSpectator() && entityx.collides() && entityx != this, d2);
+            if (entityHitResult != null) {
+                if (start.squaredDistanceTo(entityHitResult.getPos()) < d2 || result == null) {
+                    result = entityHitResult;
+                }
+            }
+            if (result != null) {
+                wantedPos = result.getPos();
+            }
+        }
+        Vec3d fireballPos = new Vec3d(this.getX(), this.getBoundingBox().minY + 2f, this.getZ());
+
+        Vec3d fireballDir;
+        if (wantedPos != null) {
+            fireballDir = wantedPos.subtract(fireballPos).normalize();
+        } else {
+            fireballDir = rider.getRotationVec(1.0f);
+        }
+        fireballDir.multiply(2);
+
         FireballEntity fireballEntity = new FireballEntity(world, rider, fireballDir.x, fireballDir.y, fireballDir.z, this.getFireballStrength());
 
         Vec3d look = this.getRotationVec(1.0F);
 //        fireballEntity.setPosition(this.getX() + look.x * 4, this.getBoundingBox().minY + 2f, this.getZ() + look.z * 4);
-        fireballEntity.setPosition(this.getX(), this.getBoundingBox().minY + 2f, this.getZ());
+        fireballEntity.setPosition(fireballPos);
         world.spawnEntity(fireballEntity);
         return true;
+    }
+
+    @Override
+    public void updatePhysicsBody() {
+        super.updatePhysicsBody();
+
+        //Overwrite bounding box
+        Box box = getBoundingBox();
+        setBoundingBox(new BoxAirShip(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, this));
     }
 
     protected void initDataTracker() {
         super.initDataTracker();
         this.dataTracker.startTracking(SHOOTING, false);
-        this.dataTracker.startTracking(SEATS, HashBiMap.create());
         this.dataTracker.startTracking(READY, true);
     }
 
@@ -154,7 +166,7 @@ public class GhastAirShip extends WorldShellEntity {
 
     @Override
     public boolean isAlive() {
-        return false;
+        return true;
     }
 
     @Override
@@ -180,11 +192,29 @@ public class GhastAirShip extends WorldShellEntity {
     }
 
     public BiMap<Integer, BlockPos> getSeats() {
-        return this.dataTracker.get(SEATS);
+//        return HashBiMap.create();
+        return this.SEATS;
+    }
+
+    @Override
+    protected boolean canAddPassenger(Entity passenger) {
+        return true;
     }
 
     public void setSeats(BiMap<Integer, BlockPos> seats) {
-        this.dataTracker.set(SEATS, seats);
+        this.SEATS = seats;
+        if (!this.world.isClient) {
+            var buf = PacketByteBufs.create();
+            buf.writeInt(this.getId());
+            buf.writeInt(seats.size());
+
+            for (var entry : seats.entrySet()) {
+                buf.writeInt(entry.getKey());
+                buf.writeBlockPos(entry.getValue());
+            }
+
+            PlayerLookup.tracking(this).forEach(serverPlayerEntity -> ServerPlayNetworking.send(serverPlayerEntity, GrappleshipMod.S2C_SEATS, buf));
+        }
     }
 
     @Override
@@ -204,6 +234,11 @@ public class GhastAirShip extends WorldShellEntity {
                     if (!this.isSilent()) {
                         world.syncWorldEvent(null, WorldEvents.GHAST_WARNS, this.getBlockPos(), 0);
                     }
+                }
+            }
+            for (var passenger : getPassengerList()) {
+                if (passenger instanceof ServerPlayerEntity pe) {
+                    ((ServerPlayNetworkHandlerAcc) pe.networkHandler).setVehicleFloatingTicks(0);
                 }
             }
         }
@@ -247,9 +282,15 @@ public class GhastAirShip extends WorldShellEntity {
         }
     }
 
+    //Stop ghast ship from being saved with player
+    @Override
+    public boolean hasPlayerRider() {
+        return false;
+    }
+
     @Override
     public void setYaw(float yaw) {
-        super.setYaw(yaw);
+        super.setYaw(yaw);//todo last yaw
         this.setRotation(new Quaternion().fromAngles(0, Math.toRadians(-yaw), 0));
     }
 
