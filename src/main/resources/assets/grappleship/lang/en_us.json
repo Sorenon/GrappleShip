@@ -6,5 +6,6 @@
   "block.grappleship.seat": "Seat",
   "entity.grappleship.ghast_airship": "Ghast Airship",
   "category.grapplingship" : "Grappling Ship",
-  "key.grapplingship.force_dismount": "Force Dismount"
+  "key.grapplingship.force_dismount": "Force Dismount",
+  "itemGroup.grappleship.group": "Grappleship"
 }

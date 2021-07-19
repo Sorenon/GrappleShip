@@ -1,12 +1,17 @@
 package net.sorenon.grappleship;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.impl.item.group.CreativeGuiExtensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
@@ -35,7 +40,10 @@ public class GrappleshipMod implements ModInitializer {
 	public static final Identifier C2S_FORCE_DISMOUNT = new Identifier(MODID, "force_dismount");
 	public static final Identifier S2C_SEATS = new Identifier(MODID, "seats");
 
-	public static final WristGrappleItem WRIST_GRAPPLE_ITEM = new WristGrappleItem(new FabricItemSettings().maxCount(1));
+	public static final FabricItemGroupBuilder ITEM_GROUP_BASE = FabricItemGroupBuilder.create(new Identifier(MODID, "group"));
+	public static final ItemGroup ITEM_GROUP = ITEM_GROUP_BASE.build();
+
+	public static final WristGrappleItem WRIST_GRAPPLE_ITEM = new WristGrappleItem(new FabricItemSettings().maxCount(1).group(ITEM_GROUP));
 
 	public static final ShipsHelm SHIPS_HELM = new ShipsHelm();
 	public static final SeatBlock SEAT = new SeatBlock();
@@ -45,16 +53,17 @@ public class GrappleshipMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 //		Registry.register(Registry.ITEM, new Identifier(MODID, "grapple"), new GrappleHookItem(new FabricItemSettings().maxCount(1)));
+		ITEM_GROUP_BASE.icon(() -> new ItemStack(WRIST_GRAPPLE_ITEM));
+
 		Registry.register(Registry.ITEM, new Identifier(MODID, "wrist_grapple"), WRIST_GRAPPLE_ITEM);
 		Registry.register(Registry.ITEM, new Identifier(MODID, "command_stick"), new CommandStickItem());
 
 		Registry.register(Registry.BLOCK, new Identifier(MODID, "helm"), SHIPS_HELM);
-		Registry.register(Registry.ITEM, new Identifier(MODID, "helm"), new BlockItem(SHIPS_HELM, new FabricItemSettings()));
+		Registry.register(Registry.ITEM, new Identifier(MODID, "helm"), new BlockItem(SHIPS_HELM, new FabricItemSettings().group(ITEM_GROUP)));
 		Registry.register(Registry.ENTITY_TYPE, new Identifier(MODID, "ghast_airship"), AIRSHIP_TYPE);
 
 		Registry.register(Registry.BLOCK, new Identifier(MODID, "seat"), SEAT);
-		Registry.register(Registry.ITEM, new Identifier(MODID, "seat"), new BlockItem(SEAT, new FabricItemSettings()));
-
+		Registry.register(Registry.ITEM, new Identifier(MODID, "seat"), new BlockItem(SEAT, new FabricItemSettings().group(ITEM_GROUP)));
 
 		ServerPlayNetworking.registerGlobalReceiver(C2S_START_GRAPPLE, (server, player, handler, buf, responseSender) -> {
 			Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());

@@ -7,10 +7,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import net.sorenon.grappleship.GrappleshipMod;
 
 public class CommandStickItem extends Item {
     public CommandStickItem() {
-        super(new FabricItemSettings().maxCount(1));
+        super(new FabricItemSettings().maxCount(1).group(GrappleshipMod.ITEM_GROUP));
     }
 
     @Override
