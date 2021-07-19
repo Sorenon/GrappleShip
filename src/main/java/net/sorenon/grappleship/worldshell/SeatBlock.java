@@ -14,8 +14,8 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.snakefangox.worldshell.entity.WorldShellEntity;
-import net.snakefangox.worldshell.storage.ShellAwareBlock;
+import net.snakefangox.worldshell_fork.entity.WorldShellEntity;
+import net.snakefangox.worldshell_fork.storage.ShellAwareBlock;
 
 public class SeatBlock extends Block implements ShellAwareBlock {
     public SeatBlock() {

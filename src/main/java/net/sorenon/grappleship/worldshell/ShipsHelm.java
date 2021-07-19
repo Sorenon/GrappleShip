@@ -15,8 +15,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.snakefangox.worldshell.transfer.WorldShellConstructor;
-import net.snakefangox.worldshell.world.Worldshell;
+import net.snakefangox.worldshell_fork.transfer.WorldShellConstructor;
+import net.snakefangox.worldshell_fork.world.Worldshell;
 import net.sorenon.grappleship.GrappleshipMod;
 import org.jetbrains.annotations.Nullable;
 

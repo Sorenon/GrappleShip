@@ -10,7 +10,7 @@ import net.minecraft.client.render.entity.model.GhastEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3f;
-import net.snakefangox.worldshell.client.WorldShellRender;
+import net.snakefangox.worldshell_fork.client.WorldShellRender;
 import net.sorenon.grappleship.worldshell.GhastAirShip;
 
 public class GhastShipRenderer extends EntityRenderer<GhastAirShip> {
