@@ -93,7 +93,7 @@ public class WristGrappleItem extends Item {
     }
 
     public double getLength(ItemStack stack) {
-        var tag = stack.getOrCreateTag();
+        var tag = stack.getOrCreateNbt();
         if (!tag.contains("Length", NbtType.DOUBLE)) {
             tag.putDouble("Length", 10);
         }
@@ -101,7 +101,7 @@ public class WristGrappleItem extends Item {
     }
 
     public boolean likesBlocks(ItemStack stack) {
-        var tag = stack.getOrCreateTag();
+        var tag = stack.getOrCreateNbt();
         if (!tag.contains("LikesBlocks", NbtType.BYTE)) {
             tag.putBoolean("LikesBlocks", true);
         }
@@ -109,7 +109,7 @@ public class WristGrappleItem extends Item {
     }
 
     public boolean likesEntities(ItemStack stack) {
-        var tag = stack.getOrCreateTag();
+        var tag = stack.getOrCreateNbt();
         if (!tag.contains("LikesEntities", NbtType.BYTE)) {
             tag.putBoolean("LikesEntities", false);
         }
@@ -117,7 +117,7 @@ public class WristGrappleItem extends Item {
     }
 
     public double getSpeed(ItemStack stack) {
-        var tag = stack.getOrCreateTag();
+        var tag = stack.getOrCreateNbt();
         if (!tag.contains("Speed", NbtType.DOUBLE)) {
             tag.putDouble("Speed", 0.05 * 3);
         }
@@ -125,7 +125,7 @@ public class WristGrappleItem extends Item {
     }
 
     public double getHandling(ItemStack stack) {
-        var tag = stack.getOrCreateTag();
+        var tag = stack.getOrCreateNbt();
         if (!tag.contains("Handling", NbtType.DOUBLE)) {
             tag.putDouble("Handling", 0.5);
         }
@@ -133,7 +133,7 @@ public class WristGrappleItem extends Item {
     }
 
     public double getDamping(ItemStack stack) {
-        var tag = stack.getOrCreateTag();
+        var tag = stack.getOrCreateNbt();
         if (!tag.contains("Damping", NbtType.DOUBLE)) {
             tag.putDouble("Damping", 0.8);
         }
