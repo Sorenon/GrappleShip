@@ -54,22 +54,24 @@ public class GrappleHookMovement extends Movement {
         if (entity instanceof ServerPlayerEntity player) {
             ((ServerPlayNetworkHandlerAcc) player.networkHandler).setFloatingTicks(0);
         }
+        else if (entity.world.isClient) {
+            if (!(entity.getActiveItem().getItem() instanceof WristGrappleItem)) {
+                var buf = PacketByteBufs.create();
+                buf.writeBoolean(false);
+                ClientPlayNetworking.send(GrappleshipMod.C2S_END_GRAPPLE, buf);
 
-        if (!(entity.getActiveItem().getItem() instanceof WristGrappleItem)) {
-            var buf = PacketByteBufs.create();
-            buf.writeBoolean(false);
-            ClientPlayNetworking.send(GrappleshipMod.C2S_END_GRAPPLE, buf);
+                return end(entity, false).travel(entity, input, jumping);
+            }
 
-            return end(entity, false).travel(entity, input, jumping);
+            if (jumping && hasNotJumped) {
+                var buf = PacketByteBufs.create();
+                buf.writeBoolean(true);
+                ClientPlayNetworking.send(GrappleshipMod.C2S_END_GRAPPLE, buf);
+
+                return end(entity, true).travel(entity, input, jumping);
+            }
         }
 
-        if (jumping && hasNotJumped) {
-            var buf = PacketByteBufs.create();
-            buf.writeBoolean(true);
-            ClientPlayNetworking.send(GrappleshipMod.C2S_END_GRAPPLE, buf);
-
-            return end(entity, true).travel(entity, input, jumping);
-        }
         if (!jumping) {
             hasNotJumped = true;
         }
